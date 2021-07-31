@@ -28,7 +28,7 @@ Menus.prototype.defaultFontSize = '12';
 /**
  * Sets the default font size.
  */
-Menus.prototype.defaultMenuItems = ['file', 'edit', 'view', 'arrange', 'extras', 'help'];
+Menus.prototype.defaultMenuItems = ['file', 'edit', 'view', 'oleg'];//, 'arrange', 'extras', 'help'];
 
 /**
  * Adds the label menu items to the given menu and parent.
@@ -381,17 +381,22 @@ Menus.prototype.init = function () {
 	this.put('navigation', new Menu(mxUtils.bind(this, function (menu, parent) {
 		this.addMenuItems(menu, ['home', '-', 'exitGroup', 'enterGroup', '-', 'expand', 'collapse', '-', 'collapsible'], parent);
 	})));
-	this.put('arrange', new Menu(mxUtils.bind(this, function (menu, parent) {
-		this.addMenuItems(menu, ['toFront', 'toBack', 'bringForward', 'sendBackward', '-'], parent);
-		this.addSubmenu('direction', menu, parent);
-		this.addMenuItems(menu, ['turn', '-'], parent);
-		this.addSubmenu('align', menu, parent);
-		this.addSubmenu('distribute', menu, parent);
-		menu.addSeparator(parent);
-		this.addSubmenu('navigation', menu, parent);
-		this.addSubmenu('insert', menu, parent);
-		this.addSubmenu('layout', menu, parent);
-		this.addMenuItems(menu, ['-', 'group', 'ungroup', 'removeFromGroup', '-', 'clearWaypoints', 'autosize'], parent);
+	// this.put('arrange', new Menu(mxUtils.bind(this, function (menu, parent) {
+	// 	this.addMenuItems(menu, ['toFront', 'toBack', 'bringForward', 'sendBackward', '-'], parent);
+	// 	this.addSubmenu('direction', menu, parent);
+	// 	this.addMenuItems(menu, ['turn', '-'], parent);
+	// 	this.addSubmenu('align', menu, parent);
+	// 	this.addSubmenu('distribute', menu, parent);
+	// 	menu.addSeparator(parent);
+	// 	this.addSubmenu('navigation', menu, parent);
+	// 	this.addSubmenu('insert', menu, parent);
+	// 	this.addSubmenu('layout', menu, parent);
+	// 	this.addMenuItems(menu, ['-', 'group', 'ungroup', 'removeFromGroup', '-', 'clearWaypoints', 'autosize'], parent);
+	// }))).isEnabled = isGraphEnabled;
+	this.put('oleg', new Menu(mxUtils.bind(this, function (menu, parent) {
+		// this.editorUi.editor
+		postMessage({ oleg: "VisibilityToggle", visibility: !this.editorUi.editor.visibility });
+		this.editorUi.editor.visibility = !this.editorUi.editor.visibility;
 	}))).isEnabled = isGraphEnabled;
 	this.put('insert', new Menu(mxUtils.bind(this, function (menu, parent) {
 		this.addMenuItems(menu, ['insertLink', 'insertImage'], parent);
@@ -432,9 +437,9 @@ Menus.prototype.init = function () {
 			'editData', 'editTooltip', '-', 'editStyle', '-', 'edit', '-', 'editLink', 'openLink', '-',
 			'selectVertices', 'selectEdges', 'selectAll', 'selectNone', '-', 'lockUnlock']);
 	})));
-	this.put('extras', new Menu(mxUtils.bind(this, function (menu, parent) {
-		this.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-', 'editDiagram']);
-	})));
+	// this.put('extras', new Menu(mxUtils.bind(this, function (menu, parent) {
+	// 	this.addMenuItems(menu, ['copyConnect', 'collapseExpand', '-', 'editDiagram']);
+	// })));
 	this.put('help', new Menu(mxUtils.bind(this, function (menu, parent) {
 		this.addMenuItems(menu, ['help', '-', 'about']);
 	})));
