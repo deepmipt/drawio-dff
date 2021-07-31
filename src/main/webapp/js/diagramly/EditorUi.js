@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2017, JGraph Ltd
+* Copyright (c) 2006-2017, JGraph Ltd
  * Copyright (c) 2006-2017, Gaudenz Alder
  */
 (function () {
@@ -7536,44 +7536,75 @@
 		};
 		var parent = window.opener || window.parent;
 		// Overrides function to add editing for Plant UML.
+		// editable_cells_oleg = new Object();
+		window.addEventListener('message', event => {
+			const message = event.data; // The JSON data our extension sent
+			switch (message.oleg) {
+				case 'Privet':
+					{
+						var cid = message.cell_id;
+						var data = message.data;
+
+						var ce = graph.model.getCell(Number(cid));
+						graph.model.beginUpdate();
+						try {
+							graph.setAttributeForCell(ce, 'data_from_form', data);
+							// window.removeEventListener('message', _oleger, true);
+						}
+						finally {
+							graph.getModel().endUpdate();
+						}
+
+						// ce.setAttribute("oleg", "kotiki");
+						// graph.cellEditor.startEditing(ce);
+					};
+			}
+		});
+
+		// EditorUi.visibility = true;
+		window.addEventListener('message', event => {
+			const message = event.data; // The JSON data our extension sent
+
+			switch (message.oleg) {
+				case 'VisibilityToggle':
+					{
+						// curr_visibility = this.suggestions_visible;
+						visibility = Boolean(message.visibility);
+						graph.model.beginUpdate();
+						try {
+							var cel = graph.model.getCell(3);
+
+							if (true) {
+								graph.model.setVisible(cel, visibility);
+							} else {
+								graph.model.setVisible(cel, true);
+							}
+						}
+						finally {
+							graph.getModel().endUpdate();
+						}
+					};
+			}
+		});
+
 		var cellEditorStartEditing = graph.cellEditor.startEditing;
-		graph.cellEditor.startEditing = function (cell, trigger) {
-
+		graph.cellEditor.startEditing = function _oleger(cell, trigger) {
 			try {
-				parent.postMessage(JSON.stringify({ event: 'oleg' }), '*');
+				var cell_id = cell.getId();
+				var cell_title = cell.getAttribute('label', "Cell #" + cell_id);
+				var curr_content = cell.getAttribute('data_from_form', JSON.stringify({}));
+				// var childCount = graph.model.getChildCount(graph.model.root);
 
-				var awaiting = true
+				// Hides all layers
+				// for (var i = 0; i < childCount; i++) {
 
-				while (awaiting) {
-					// wait
-					setTimeout(function () { awaiting = false; }, 5000);
-				}
-				var data = "kitten";
-				// this.graph.setAttributeForCell(cell, 'data', data);
-				// this.graph.getModel().endUpdate();
-
-				// 	var data = this.graph.getAttributeForCell(cell, 'plantUmlData');
-
-				// 	if (data != null) {
-				// 		this.editPlantUmlData(cell, trigger, data);
-				// 	}
-				// 	else {
-				// 		data = this.graph.getAttributeForCell(cell, 'mermaidData');
-
-				// 		if (data != null) {
-				// 			this.editMermaidData(cell, trigger, data);
-				// 		}
-				// 		else {
-				// 			var style = graph.getCellStyle(cell);
-
-				// 			if (mxUtils.getValue(style, 'metaEdit', '0') == '1') {
-				// 				ui.showDataDialog(cell);
-				// 			}
-				// 			else {
-				// 				cellEditorStartEditing.apply(this, arguments);
-				// 			}
-				// 		}
-				// 	}
+				// }
+				parent.postMessage(JSON.stringify({
+					event: "oleg",
+					cell_id: cell_id,
+					curr_content: curr_content,
+					cell_title: cell_title
+				}), '*');
 			}
 			catch (e) {
 				ui.handleError(e);
@@ -9293,7 +9324,7 @@
 	 */
 	EditorUi.prototype.setGraphEnabled = function (enabled) {
 		this.diagramContainer.style.visibility = (enabled) ? '' : 'hidden';
-		this.formatContainer.style.visibility = (enabled) ? '' : 'hidden';
+		this.formatContainer.style.visibility = 'hidden';
 		this.sidebarFooterContainer.style.display = (enabled) ? '' : 'none';
 		this.sidebarContainer.style.display = (enabled) ? '' : 'none';
 		this.hsplit.style.display = (enabled) ? '' : 'none';
@@ -9412,10 +9443,10 @@
 	EditorUi.prototype.showLayersDialog = function () {
 		if (this.editor.graph.getModel().getChildCount(this.editor.graph.getModel().getRoot()) > 1) {
 			if (this.actions.layersWindow == null) {
-				this.actions.get('layers').funct();
+				// this.actions.get('layers').funct();
 			}
 			else {
-				this.actions.layersWindow.window.setVisible(true);
+				// this.actions.layersWindow.window.setVisible(true);
 			}
 		}
 	};
@@ -11062,7 +11093,7 @@
 		// while waiting for file data
 		var libsEnabled = urlParams['embed'] != '1' ||
 			this.editor.graph.isEnabled();
-		this.menus.get('extras').setEnabled(libsEnabled);
+		// this.menus.get('extras').setEnabled(libsEnabled);
 
 		if (Editor.enableCustomLibraries) {
 			this.menus.get('openLibraryFrom').setEnabled(libsEnabled);
@@ -11086,7 +11117,7 @@
 		this.menus.get('edit').setEnabled(active);
 		this.menus.get('view').setEnabled(active);
 		this.menus.get('importFrom').setEnabled(editable);
-		this.menus.get('arrange').setEnabled(editable);
+		// this.menus.get('arrange').setEnabled(editable);
 
 		// Disables connection drop downs in toolbar
 		if (this.toolbar != null) {

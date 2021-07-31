@@ -38,6 +38,7 @@ alreadyConnected=Nodes already connected
 apply=Apliki
 archiMate21=ArchiMate 2.1
 arrange=Arrange
+oleg=Oleg
 arrow=Sago
 arrows=Sagoj
 asNew=Kiel nova

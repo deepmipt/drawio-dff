@@ -38,6 +38,7 @@ alreadyConnected=Nodes already connected
 apply=Apply
 archiMate21=ArchiMate 2.1
 arrange=Arrange
+oleg=Show Suggestions
 arrow=Arrow
 arrows=Arrows
 asNew=As New
