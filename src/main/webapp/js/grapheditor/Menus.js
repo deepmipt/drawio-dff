@@ -28,7 +28,7 @@ Menus.prototype.defaultFontSize = '12';
 /**
  * Sets the default font size.
  */
-Menus.prototype.defaultMenuItems = ['file', 'edit', 'view', 'oleg'];//, 'arrange', 'extras', 'help'];
+Menus.prototype.defaultMenuItems = ['file', 'edit', 'view', 'arrange', 'oleg'];//, 'arrange', 'extras', 'help'];
 
 /**
  * Adds the label menu items to the given menu and parent.
@@ -236,165 +236,164 @@ Menus.prototype.init = function () {
 				layout.execute(graph.getDefaultParent(), selectionCells.length == 0 ? null : selectionCells);
 			}, true);
 		}), parent);
-		menu.addSeparator(parent);
-		menu.addItem(mxResources.get('horizontalTree'), null, mxUtils.bind(this, function () {
-			var tmp = graph.getSelectionCell();
-			var roots = null;
+		// menu.addSeparator(parent);
+		// menu.addItem(mxResources.get('horizontalTree'), null, mxUtils.bind(this, function () {
+		// 	var tmp = graph.getSelectionCell();
+		// 	var roots = null;
 
-			if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
-				if (graph.getModel().getEdgeCount(tmp) == 0) {
-					roots = graph.findTreeRoots(graph.getDefaultParent());
-				}
-			}
-			else {
-				roots = graph.findTreeRoots(tmp);
-			}
+		// 	if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
+		// 		if (graph.getModel().getEdgeCount(tmp) == 0) {
+		// 			roots = graph.findTreeRoots(graph.getDefaultParent());
+		// 		}
+		// 	}
+		// 	else {
+		// 		roots = graph.findTreeRoots(tmp);
+		// 	}
 
-			if (roots != null && roots.length > 0) {
-				tmp = roots[0];
-			}
+		// 	if (roots != null && roots.length > 0) {
+		// 		tmp = roots[0];
+		// 	}
 
-			if (tmp != null) {
-				var layout = new mxCompactTreeLayout(graph, true);
-				layout.edgeRouting = false;
-				layout.levelDistance = 30;
+		// 	if (tmp != null) {
+		// 		var layout = new mxCompactTreeLayout(graph, true);
+		// 		layout.edgeRouting = false;
+		// 		layout.levelDistance = 30;
 
-				promptSpacing(layout.levelDistance, mxUtils.bind(this, function (newValue) {
-					layout.levelDistance = newValue;
+		// 		promptSpacing(layout.levelDistance, mxUtils.bind(this, function (newValue) {
+		// 			layout.levelDistance = newValue;
 
-					this.editorUi.executeLayout(function () {
-						layout.execute(graph.getDefaultParent(), tmp);
-					}, true);
-				}));
-			}
-		}), parent);
-		menu.addItem(mxResources.get('verticalTree'), null, mxUtils.bind(this, function () {
-			var tmp = graph.getSelectionCell();
-			var roots = null;
+		// 			this.editorUi.executeLayout(function () {
+		// 				layout.execute(graph.getDefaultParent(), tmp);
+		// 			}, true);
+		// 		}));
+		// 	}
+		// }), parent);
+		// menu.addItem(mxResources.get('verticalTree'), null, mxUtils.bind(this, function () {
+		// 	var tmp = graph.getSelectionCell();
+		// 	var roots = null;
 
-			if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
-				if (graph.getModel().getEdgeCount(tmp) == 0) {
-					roots = graph.findTreeRoots(graph.getDefaultParent());
-				}
-			}
-			else {
-				roots = graph.findTreeRoots(tmp);
-			}
+		// 	if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
+		// 		if (graph.getModel().getEdgeCount(tmp) == 0) {
+		// 			roots = graph.findTreeRoots(graph.getDefaultParent());
+		// 		}
+		// 	}
+		// 	else {
+		// 		roots = graph.findTreeRoots(tmp);
+		// 	}
 
-			if (roots != null && roots.length > 0) {
-				tmp = roots[0];
-			}
+		// 	if (roots != null && roots.length > 0) {
+		// 		tmp = roots[0];
+		// 	}
 
-			if (tmp != null) {
-				var layout = new mxCompactTreeLayout(graph, false);
-				layout.edgeRouting = false;
-				layout.levelDistance = 30;
+		// 	if (tmp != null) {
+		// 		var layout = new mxCompactTreeLayout(graph, false);
+		// 		layout.edgeRouting = false;
+		// 		layout.levelDistance = 30;
 
-				promptSpacing(layout.levelDistance, mxUtils.bind(this, function (newValue) {
-					layout.levelDistance = newValue;
+		// 		promptSpacing(layout.levelDistance, mxUtils.bind(this, function (newValue) {
+		// 			layout.levelDistance = newValue;
 
-					this.editorUi.executeLayout(function () {
-						layout.execute(graph.getDefaultParent(), tmp);
-					}, true);
-				}));
-			}
-		}), parent);
-		menu.addItem(mxResources.get('radialTree'), null, mxUtils.bind(this, function () {
-			var tmp = graph.getSelectionCell();
-			var roots = null;
+		// 			this.editorUi.executeLayout(function () {
+		// 				layout.execute(graph.getDefaultParent(), tmp);
+		// 			}, true);
+		// 		}));
+		// 	}
+		// }), parent);
+		// menu.addItem(mxResources.get('radialTree'), null, mxUtils.bind(this, function () {
+		// 	var tmp = graph.getSelectionCell();
+		// 	var roots = null;
 
-			if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
-				if (graph.getModel().getEdgeCount(tmp) == 0) {
-					roots = graph.findTreeRoots(graph.getDefaultParent());
-				}
-			}
-			else {
-				roots = graph.findTreeRoots(tmp);
-			}
+		// 	if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
+		// 		if (graph.getModel().getEdgeCount(tmp) == 0) {
+		// 			roots = graph.findTreeRoots(graph.getDefaultParent());
+		// 		}
+		// 	}
+		// 	else {
+		// 		roots = graph.findTreeRoots(tmp);
+		// 	}
 
-			if (roots != null && roots.length > 0) {
-				tmp = roots[0];
-			}
+		// 	if (roots != null && roots.length > 0) {
+		// 		tmp = roots[0];
+		// 	}
 
-			if (tmp != null) {
-				var layout = new mxRadialTreeLayout(graph, false);
-				layout.levelDistance = 80;
-				layout.autoRadius = true;
+		// 	if (tmp != null) {
+		// 		var layout = new mxRadialTreeLayout(graph, false);
+		// 		layout.levelDistance = 80;
+		// 		layout.autoRadius = true;
 
-				promptSpacing(layout.levelDistance, mxUtils.bind(this, function (newValue) {
-					layout.levelDistance = newValue;
+		// 		promptSpacing(layout.levelDistance, mxUtils.bind(this, function (newValue) {
+		// 			layout.levelDistance = newValue;
 
-					this.editorUi.executeLayout(function () {
-						layout.execute(graph.getDefaultParent(), tmp);
+		// 			this.editorUi.executeLayout(function () {
+		// 				layout.execute(graph.getDefaultParent(), tmp);
 
-						if (!graph.isSelectionEmpty()) {
-							tmp = graph.getModel().getParent(tmp);
+		// 				if (!graph.isSelectionEmpty()) {
+		// 					tmp = graph.getModel().getParent(tmp);
 
-							if (graph.getModel().isVertex(tmp)) {
-								graph.updateGroupBounds([tmp], graph.gridSize * 2, true);
-							}
-						}
-					}, true);
-				}));
-			}
-		}), parent);
-		menu.addSeparator(parent);
-		menu.addItem(mxResources.get('organic'), null, mxUtils.bind(this, function () {
-			var layout = new mxFastOrganicLayout(graph);
+		// 					if (graph.getModel().isVertex(tmp)) {
+		// 						graph.updateGroupBounds([tmp], graph.gridSize * 2, true);
+		// 					}
+		// 				}
+		// 			}, true);
+		// 		}));
+		// 	}
+		// }), parent);
+		// menu.addSeparator(parent);
+		// menu.addItem(mxResources.get('organic'), null, mxUtils.bind(this, function () {
+		// 	var layout = new mxFastOrganicLayout(graph);
 
-			promptSpacing(layout.forceConstant, mxUtils.bind(this, function (newValue) {
-				layout.forceConstant = newValue;
+		// 	promptSpacing(layout.forceConstant, mxUtils.bind(this, function (newValue) {
+		// 		layout.forceConstant = newValue;
 
-				this.editorUi.executeLayout(function () {
-					var tmp = graph.getSelectionCell();
+		// 		this.editorUi.executeLayout(function () {
+		// 			var tmp = graph.getSelectionCell();
 
-					if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
-						tmp = graph.getDefaultParent();
-					}
+		// 			if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
+		// 				tmp = graph.getDefaultParent();
+		// 			}
 
-					layout.execute(tmp);
+		// 			layout.execute(tmp);
 
-					if (graph.getModel().isVertex(tmp)) {
-						graph.updateGroupBounds([tmp], graph.gridSize * 2, true);
-					}
-				}, true);
-			}));
-		}), parent);
-		menu.addItem(mxResources.get('circle'), null, mxUtils.bind(this, function () {
-			var layout = new mxCircleLayout(graph);
+		// 			if (graph.getModel().isVertex(tmp)) {
+		// 				graph.updateGroupBounds([tmp], graph.gridSize * 2, true);
+		// 			}
+		// 		}, true);
+		// 	}));
+		// }), parent);
+		// menu.addItem(mxResources.get('circle'), null, mxUtils.bind(this, function () {
+		// 	var layout = new mxCircleLayout(graph);
 
-			this.editorUi.executeLayout(function () {
-				var tmp = graph.getSelectionCell();
+		// 	this.editorUi.executeLayout(function () {
+		// 		var tmp = graph.getSelectionCell();
 
-				if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
-					tmp = graph.getDefaultParent();
-				}
+		// 		if (tmp == null || graph.getModel().getChildCount(tmp) == 0) {
+		// 			tmp = graph.getDefaultParent();
+		// 		}
 
-				layout.execute(tmp);
+		// 		layout.execute(tmp);
 
-				if (graph.getModel().isVertex(tmp)) {
-					graph.updateGroupBounds([tmp], graph.gridSize * 2, true);
-				}
-			}, true);
-		}), parent);
+		// 		if (graph.getModel().isVertex(tmp)) {
+		// 			graph.updateGroupBounds([tmp], graph.gridSize * 2, true);
+		// 		}
+		// 	}, true);
+		// }), parent);
 	})));
 	this.put('navigation', new Menu(mxUtils.bind(this, function (menu, parent) {
 		this.addMenuItems(menu, ['home', '-', 'exitGroup', 'enterGroup', '-', 'expand', 'collapse', '-', 'collapsible'], parent);
 	})));
-	// this.put('arrange', new Menu(mxUtils.bind(this, function (menu, parent) {
-	// 	this.addMenuItems(menu, ['toFront', 'toBack', 'bringForward', 'sendBackward', '-'], parent);
-	// 	this.addSubmenu('direction', menu, parent);
-	// 	this.addMenuItems(menu, ['turn', '-'], parent);
-	// 	this.addSubmenu('align', menu, parent);
-	// 	this.addSubmenu('distribute', menu, parent);
-	// 	menu.addSeparator(parent);
-	// 	this.addSubmenu('navigation', menu, parent);
-	// 	this.addSubmenu('insert', menu, parent);
-	// 	this.addSubmenu('layout', menu, parent);
-	// 	this.addMenuItems(menu, ['-', 'group', 'ungroup', 'removeFromGroup', '-', 'clearWaypoints', 'autosize'], parent);
-	// }))).isEnabled = isGraphEnabled;
+	this.put('arrange', new Menu(mxUtils.bind(this, function (menu, parent) {
+		// this.addMenuItems(menu, ['toFront', 'toBack', 'bringForward', 'sendBackward', '-'], parent);
+		// this.addSubmenu('direction', menu, parent);
+		// this.addMenuItems(menu, ['turn', '-'], parent);
+		// this.addSubmenu('align', menu, parent);
+		// this.addSubmenu('distribute', menu, parent);
+		// menu.addSeparator(parent);
+		// this.addSubmenu('navigation', menu, parent);
+		// this.addSubmenu('insert', menu, parent);
+		this.addSubmenu('layout', menu, parent);
+		// this.addMenuItems(menu, ['-', 'group', 'ungroup', 'removeFromGroup', '-', 'clearWaypoints', 'autosize'], parent);
+	}))).isEnabled = isGraphEnabled;
 	this.put('oleg', new Menu(mxUtils.bind(this, function (menu, parent) {
-		// this.editorUi.editor
 		postMessage({ oleg: "VisibilityToggle", visibility: !this.editorUi.editor.visibility });
 		this.editorUi.editor.visibility = !this.editorUi.editor.visibility;
 	}))).isEnabled = isGraphEnabled;
