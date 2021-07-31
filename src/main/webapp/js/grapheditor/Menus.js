@@ -28,7 +28,7 @@ Menus.prototype.defaultFontSize = '12';
 /**
  * Sets the default font size.
  */
-Menus.prototype.defaultMenuItems = ['file', 'edit', 'view', 'arrange', 'oleg'];//, 'arrange', 'extras', 'help'];
+Menus.prototype.defaultMenuItems = ['file', 'edit', 'view', 'arrange', 'oleg'];
 
 /**
  * Adds the label menu items to the given menu and parent.
@@ -393,9 +393,12 @@ Menus.prototype.init = function () {
 		this.addSubmenu('layout', menu, parent);
 		// this.addMenuItems(menu, ['-', 'group', 'ungroup', 'removeFromGroup', '-', 'clearWaypoints', 'autosize'], parent);
 	}))).isEnabled = isGraphEnabled;
-	this.put('oleg', new Menu(mxUtils.bind(this, function (menu, parent) {
+	this.put('oleg1', new Menu(mxUtils.bind(this, function (menu, parent) {
 		postMessage({ oleg: "VisibilityToggle", visibility: !this.editorUi.editor.visibility });
 		this.editorUi.editor.visibility = !this.editorUi.editor.visibility;
+	}))).isEnabled = isGraphEnabled;
+	this.put('oleg2', new Menu(mxUtils.bind(this, function (menu, parent) {
+
 	}))).isEnabled = isGraphEnabled;
 	this.put('insert', new Menu(mxUtils.bind(this, function (menu, parent) {
 		this.addMenuItems(menu, ['insertLink', 'insertImage'], parent);
