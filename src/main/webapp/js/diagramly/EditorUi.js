@@ -7543,12 +7543,13 @@
 				case 'Privet':
 					{
 						var cid = message.cell_id;
-						var data = message.data;
+						var data = JSON.parse(message.data);
 
 						var ce = graph.model.getCell(Number(cid));
 						graph.model.beginUpdate();
 						try {
-							graph.setAttributeForCell(ce, 'data_from_form', data);
+							graph.setAttributeForCell(ce, 'data_from_form', message.data);
+							graph.setAttributeForCell(ce, 'label', data["node_title"]);
 							// window.removeEventListener('message', _oleger, true);
 						}
 						finally {
@@ -7558,30 +7559,49 @@
 						// ce.setAttribute("oleg", "kotiki");
 						// graph.cellEditor.startEditing(ce);
 					};
-			}
-		});
-
-		// EditorUi.visibility = true;
-		window.addEventListener('message', event => {
-			const message = event.data; // The JSON data our extension sent
-
-			switch (message.oleg) {
+				case 'editCell':
+					{
+						var cid = message.cell_id;
+						var ce = graph.model.getCell(Number(cid));
+						graph.cellEditor.startEditing(ce);
+					};
 				case 'VisibilityToggle':
 					{
 						// curr_visibility = this.suggestions_visible;
 						visibility = Boolean(message.visibility);
 						graph.model.beginUpdate();
-						try {
-							var cel = graph.model.getCell(3);
+						var sugg_cel = graph.model.getCell(3);
+						var main_canvas = graph.model.getCell(2);
+						var main_canvas_id = main_canvas.getId();
+						var main_cells = graph.model.getChildCells(layer_cell);
+						if (visibility) {
+							try {
+								main_cells.forEach((cel) => {
+									var cel_geom = cel.getGeometry();
+									var cel_x = cel_geom.x;
+									var cel_y = cel_geom.y;
+									var cel_h = cel_geom.height;
+									var cel_w = cel_geom.width;
 
-							if (true) {
-								graph.model.setVisible(cel, visibility);
-							} else {
-								graph.model.setVisible(cel, true);
+									// var fake_src_cel = graph.insertVertex(sugg_cel, null, "", cel_x, cel_y, cel_w, cel_h, cel.getStyle());
+									var new_cel = graph.insertVertex(sugg_cel, null, "suggestion", cel_x + cel_w * 1.2, cel_y, cel_w, cel_h, cel.getStyle() + "dashed=1;");
+									// var new_cel2 = graph.insertVertex(sugg_cel, null, "suggestion", cel_x + cel_w * 2, cel_y, cel_w, cel_h, cel.getStyle() + "dashed=1;");
+
+									// graph.insertEdge(sugg_cel, null, '0.9', fake_src_cel, new_cel, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
+								});
+								graph.model.setVisible(sugg_cel, true);
 							}
-						}
-						finally {
-							graph.getModel().endUpdate();
+							finally {
+								graph.getModel().endUpdate();
+							}
+						} else {
+							try {
+								graph.model.setVisible(sugg_cel, false);
+								graph.removeCells(graph.getChildVertices(sugg_cel));
+							}
+							finally {
+								graph.getModel().endUpdate();
+							}
 						}
 					};
 			}
@@ -7593,7 +7613,55 @@
 				var cell_id = cell.getId();
 				var cell_title = cell.getAttribute('label', "Cell #" + cell_id);
 				var curr_content = cell.getAttribute('data_from_form', JSON.stringify({}));
+
+				layer_cell = graph.model.getCell(2); // 2 is the layer cell
+				layer_cells = layer_cell.children;
+				children_cells = [];
+
+				var edges = graph.model.getChildEdges(layer_cell);
+				var enc = new mxCodec(mxUtils.createXmlDocument());
+				var node = enc.encode(graph.getModel());
+				// var xml = mxUtils.getXml(node);
+				var edges = node.querySelectorAll("mxCell[source][target]");
+				// var src2tgt = [];
+				edges.forEach(edge => {
+					var src_node_id = edge.getAttribute("source");
+					var tgt_node_id = edge.getAttribute("target");
+					if (src_node_id == cell_id) {
+						var condition = edge.getAttribute("cond", "");
+						var child_cell = graph.model.getCell(tgt_node_id);
+						var child_cell_id = child_cell.getId();
+						var child_cell_title = child_cell.getAttribute('label', "Cell #" + child_cell_id);
+						children_cells.push({
+							"title": child_cell_title,
+							"condition": condition,
+							"cell_id": child_cell_id
+						});
+					}
+					// src2tgt.push({ src: src_node_id, tgt: tgt_node_id });
+				})
+				// var xml2 = mxUtils.getXml(edges);
+				// layer_cells.forEach(ce => {
+				// 	// if (cell.hasAttribute("source")) {
+				// 	// 	condition_text = cell.getAttribute("condition_text");
+
+				// 	// 	children_id = cell.getAttribute("target");
+				// 	// 	children_cell = graph.getCellById(Number(children_id));
+				// 	// 	children_cell_cond = children_cell.getAttribute("condition");
+				// 	// 	children_cell_title = children_cell.getAttribute('label', "Cell #" + cell_id);
+
+				// 	// children_cells.push({
+				// 	// 	"title": children_cell_title,
+				// 	// 	"condition": children_cell_cond,
+				// 	// 	"cell_id": children_id
+				// 	// });
+				// 	// }
+				// })
 				// var childCount = graph.model.getChildCount(graph.model.root);
+				// var cell_children = [
+				// 	{ "title": "node1", "condition": "true", "cell_id": 5 },
+				// 	{ "title": "node2", "condition": "true", "cell_id": 6 }
+				// ];
 
 				// Hides all layers
 				// for (var i = 0; i < childCount; i++) {
@@ -7603,7 +7671,8 @@
 					event: "oleg",
 					cell_id: cell_id,
 					curr_content: curr_content,
-					cell_title: cell_title
+					cell_title: cell_title,
+					children: children_cells
 				}), '*');
 			}
 			catch (e) {
