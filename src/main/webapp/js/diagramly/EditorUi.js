@@ -7535,8 +7535,11 @@
 			dlg.init();
 		};
 		var parent = window.opener || window.parent;
+
+		let visible_coords = [];
 		// Overrides function to add editing for Plant UML.
 		// editable_cells_oleg = new Object();
+
 		window.addEventListener('message', event => {
 			const message = event.data; // The JSON data our extension sent
 			switch (message.oleg) {
@@ -7549,60 +7552,212 @@
 						graph.model.beginUpdate();
 						try {
 							graph.setAttributeForCell(ce, 'data_from_form', message.data);
-							graph.setAttributeForCell(ce, 'label', data["node_title"]);
+							node_title = data["node_title"].split(' ')[0]
+							var par_id = ce.getAttribute("par");
+							var parcel = graph.model.getCell(Number(par_id));
+
+							if (ce.getStyle().includes("dashed=1")) {
+								ce.setStyle(ce.getStyle().replace("dashed=1", "dashed=0"));
+								graph.model.endUpdate();
+								graph.model.beginUpdate();
+
+								graph.insertEdge(graph.model.getCell(2), null, 'AAA', parcel, ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;"); graph.setAttributeForCell(ce, 'label', `${node_title} ${data["sfc"]}`);
+
+								for (let i = 0; i < ce.getEdgeCount(); i++) {
+									let edge = ce.getEdgeAt(i);
+
+									if (edge.target === null) continue; // no target
+									if (ce.getId() === edge.target.getId()) graph.model.remove(edge);
+								}
+
+								graph.model.add(graph.model.getCell(2), ce); // index is optional here
+
+								var sugg_cel = graph.model.getCell(3);
+								graph.model.setVisible(sugg_cel, false);
+								graph.removeCells(graph.getChildVertices(sugg_cel));
+								visible_coords = []
+								// window.removeEventListener('message', _oleger, true);
+								var layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
+
+								this.executeLayout(function () {
+									// 	var selectionCells = graph.getModel().cells;
+									layout.execute(graph.model.getCell(2));
+								}, true);
+								graph.refresh();
+								graph.setSelectionCell(ce);
+
+
+							}
+							;
 							// window.removeEventListener('message', _oleger, true);
 						}
 						finally {
-							graph.getModel().endUpdate();
+							graph.model.endUpdate();
 						}
 
 						// ce.setAttribute("oleg", "kotiki");
 						// graph.cellEditor.startEditing(ce);
+						break;
 					};
 				case 'editCell':
 					{
 						var cid = message.cell_id;
 						var ce = graph.model.getCell(Number(cid));
 						graph.cellEditor.startEditing(ce);
+						break;
+					};
+				case 'editEdge':
+					{
+						var cid = message.cell_id;
+						var sfc = message.sfc;
+						// var ce = graph.model.getCell(Number(cid));
+						var ce1 = graph.model.getCell(Number(cid));
+
+						graph.model.beginUpdate();
+						try {
+							for (let i = 0; i < ce1.getEdgeCount(); i++) {
+								let edge = ce1.getEdgeAt(i);
+								if (ce1.getId() === edge.target.getId()) {
+									edge.setValue(`${sfc}`)
+								}
+							}
+						}
+						finally {
+							graph.model.endUpdate();
+						}
+						break;
+					};
+				case 'DrawSuggestions':
+					{
+						var visibility = message.visibility;
+						try {
+							graph.model.beginUpdate();
+							var main_canvas = graph.model.getCell(2);
+							var main_canvas_id = main_canvas.getId();
+							if (visibility) {
+
+								var main_cells = message.cells;
+								graph.model.beginUpdate();
+
+								var cells_to_get_suggestions_from = [];
+								try {
+									var sugg_cel = graph.model.getCell(3);
+
+									main_cells.forEach((cel) => {
+										var cel_x = cel.x;
+										var cel_y = cel.y;
+										var cel_h = cel.h;
+										var cel_w = cel.w;
+										var cel_id = cel.id;
+										var cel_sty = cel.sty;
+										var cel_sfcs = cel.sug_sf;
+										var space = 10;
+										var nsugs = cel_sfcs.length;
+										var delta = ((cel_h + space) * (nsugs - 1)) / 2;
+										var step = cel_h + space;
+										var new_cel2 = graph.insertVertex(sugg_cel, null, "", cel_x + cel_w,
+											cel_y + cel_h * 0.5, 0.1, 0.1);
+										cel_sfcs.forEach((sug_sfc) => {
+											var sfc = sug_sfc.sug;
+											var cel_hash = cel_x.toString() + "@" + cel_y.toString() + "@" + sfc;
+											if (!visible_coords.includes(cel_hash)) {
+												var new_cel1 = graph.insertVertex(sugg_cel, null, "suggestion",
+													cel_x + cel_w * 1.2, cel_y + 10 + delta,
+													cel_w, cel_h, cel_sty + "dashed=1;");
+												delta = delta - step;
+												graph.setAttributeForCell(new_cel1, "par", cel_id);
+
+												visible_coords.push(cel_hash);
+												graph.insertEdge(sugg_cel, null, sfc, new_cel2, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
+											}
+										})
+
+									})
+									graph.model.endUpdate();
+									graph.model.setVisible(sugg_cel, true);
+
+								}
+								catch (e) {
+									ui.handleError(e);
+								}
+								finally {
+									graph.model.endUpdate();
+								}
+								graph.refresh();
+
+
+							} else {
+								try {
+									graph.model.beginUpdate();
+									// var sugg_cel = graph.model.getCell(3);
+									// graph.removeCells(graph.getChildVertices(sugg_cel));
+									// graph.model.setVisible(sugg_cel, false);
+									// graph.refresh();
+									visible_coords = [];
+									var cells = graph.model.cells;
+									var bad_cells = []
+									//Add sketch style and font to all cells
+									for (var id in cells) {
+										var cell = cells[id];
+										var cell_sty = cell.getStyle();
+										// throw `dashed ${cell_sty} ${cell.getId()}`;
+										if (cell_sty === undefined) {
+											cell_sty = '';
+										}
+										if (true) {
+											bad_cells.push(cell);
+										}
+										var sugg_cel = graph.model.getCell(3);
+										// graph.model.setVisible(sugg_cel, false);
+										graph.removeCells(graph.getChildVertices(sugg_cel));
+
+
+										graph.refresh();
+
+									}
+									graph.model.endUpdate();
+								}
+								catch (e) {
+									ui.handleError(e);
+								}
+								finally {
+									graph.model.endUpdate();
+									graph.refresh();
+
+								}
+							}
+						}
+						catch (e) {
+							ui.handleError(e);
+						}
+						break;
 					};
 				case 'VisibilityToggle':
 					{
-						// curr_visibility = this.suggestions_visible;
-						visibility = Boolean(message.visibility);
-						graph.model.beginUpdate();
-						var sugg_cel = graph.model.getCell(3);
-						var main_canvas = graph.model.getCell(2);
-						var main_canvas_id = main_canvas.getId();
+						var layer_cell = graph.model.getCell(2);
 						var main_cells = graph.model.getChildCells(layer_cell);
-						if (visibility) {
-							try {
-								main_cells.forEach((cel) => {
-									var cel_geom = cel.getGeometry();
-									var cel_x = cel_geom.x;
-									var cel_y = cel_geom.y;
-									var cel_h = cel_geom.height;
-									var cel_w = cel_geom.width;
+						var cells_to_get_suggestions_from = [];
+						main_cells.forEach((cel) => {
+							var cel_geom = cel.getGeometry();
+							var cel_x = cel_geom.x;
+							var cel_y = cel_geom.y;
+							var cel_h = cel_geom.height;
+							var cel_w = cel_geom.width;
+							var cel_id = cel.getId();
+							var cel_sty = cel.getStyle();
 
-									// var fake_src_cel = graph.insertVertex(sugg_cel, null, "", cel_x, cel_y, cel_w, cel_h, cel.getStyle());
-									var new_cel = graph.insertVertex(sugg_cel, null, "suggestion", cel_x + cel_w * 1.2, cel_y, cel_w, cel_h, cel.getStyle() + "dashed=1;");
-									// var new_cel2 = graph.insertVertex(sugg_cel, null, "suggestion", cel_x + cel_w * 2, cel_y, cel_w, cel_h, cel.getStyle() + "dashed=1;");
+							var cel4sugg = {
+								id: cel_id,
+								x: cel_x, y: cel_y, h: cel_h, w: cel_w,
+								sty: cel_sty
+							}
+							cells_to_get_suggestions_from.push(cel4sugg);
+						});
 
-									// graph.insertEdge(sugg_cel, null, '0.9', fake_src_cel, new_cel, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
-								});
-								graph.model.setVisible(sugg_cel, true);
-							}
-							finally {
-								graph.getModel().endUpdate();
-							}
-						} else {
-							try {
-								graph.model.setVisible(sugg_cel, false);
-								graph.removeCells(graph.getChildVertices(sugg_cel));
-							}
-							finally {
-								graph.getModel().endUpdate();
-							}
-						}
+						parent.postMessage(JSON.stringify({
+							event: "get_suggs",
+							cells: cells_to_get_suggestions_from,
+						}), '*');
 					};
 			}
 		});

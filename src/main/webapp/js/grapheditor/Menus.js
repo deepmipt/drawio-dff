@@ -394,8 +394,9 @@ Menus.prototype.init = function () {
 		// this.addMenuItems(menu, ['-', 'group', 'ungroup', 'removeFromGroup', '-', 'clearWaypoints', 'autosize'], parent);
 	}))).isEnabled = isGraphEnabled;
 	this.put('oleg1', new Menu(mxUtils.bind(this, function (menu, parent) {
-		postMessage({ oleg: "VisibilityToggle", visibility: !this.editorUi.editor.visibility });
-		this.editorUi.editor.visibility = !this.editorUi.editor.visibility;
+		var vis = !this.editorUi.editor.visibility;
+		this.editorUi.editor.visibility = vis;
+		postMessage({ oleg: "VisibilityToggle", visibility: vis });
 	}))).isEnabled = isGraphEnabled;
 	// this.put('oleg3', new Menu(mxUtils.bind(this, function (menu, parent) {
 	// 	postMessage({ oleg: "Global Transitions", visibility: !this.editorUi.editor.visibility });
