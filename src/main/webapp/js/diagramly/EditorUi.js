@@ -7557,7 +7557,8 @@
 							}
 							graph.setAttributeForCell(ce, 'data_from_form', message.data);
 							node_title = data["node_title"].split(' ')[0]
-							graph.setAttributeForCell(ce, 'label', `${node_title} ${data["sfc"]}`);
+							var sfc = data["sfc"].split(' ')[0];
+							graph.setAttributeForCell(ce, 'label', `${node_title} ${sfc}`);
 							// var par_id = ce.getAttribute("par");
 							// var parcel = graph.model.getCell(Number(par_id));
 							// var base_lay = graph.model.getCell(2);
@@ -7598,7 +7599,8 @@
 								ce.setStyle(ce.getStyle().replace("dashed=1", "dashed=0"));
 								graph.model.add(graph.model.getCell(2), ce); // index is optional here
 								ce.setParent(graph.model.getCell(2));
-								graph.insertEdge(graph.model.getCell(2), null, ce.getAttribute('incsfc'), graph.model.getCell(ce.getAttribute('par')), ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
+								// (p=${ce.getAttribute('incsfcconf')})
+								graph.insertEdge(graph.model.getCell(2), null, `${ce.getAttribute('incsfc')}`, graph.model.getCell(ce.getAttribute('par')), ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
 								// graph.removeCells([ce]);
 								graph.removeCells(graph.getChildVertices(graph.model.getCell(3)));
 								graph.refresh();
@@ -7657,7 +7659,8 @@
 								for (let i = 0; i < ce1.getEdgeCount(); i++) {
 									let edge = ce1.getEdgeAt(i);
 									if (ce1.getId() === edge.target.getId()) {
-										edge.setValue(`${sfc} (p=${cond})`);
+										// (p=${cond})
+										edge.setValue(`${sfc}`);
 									}
 								}
 							}
@@ -7674,6 +7677,7 @@
 				case 'DrawSuggestions':
 					{
 						var visibility = message.visibility;
+						var nodes_suggestions = message.nodes_suggestions;
 						try {
 							graph.model.beginUpdate();
 							var main_canvas = graph.model.getCell(2);
@@ -7713,6 +7717,8 @@
 												graph.setAttributeForCell(new_cel1, "par", cel_id);
 												new_cel1.setAttribute("par", cel_id);
 												new_cel1.setAttribute("incsfc", sfc);
+												new_cel1.setAttribute("incsfcconf", conf);
+												new_cel1.setAttribute("possible_sfs", JSON.stringify(nodes_suggestions[sfc]));
 
 												visible_coords.push(cel_hash);
 												graph.insertEdge(sugg_cel, null, `${sfc} (p=${conf})`, new_cel2, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
@@ -7818,7 +7824,7 @@
 				var cell_id = cell.getId();
 				var cell_title = cell.getAttribute('label', "Cell #" + cell_id);
 				var curr_content = cell.getAttribute('data_from_form', JSON.stringify({}));
-
+				var cell_suggestions = cell.getAttribute("possible_sfs");
 				layer_cell = graph.model.getCell(2); // 2 is the layer cell
 				layer_cells = layer_cell.children;
 				children_cells = [];
@@ -7877,7 +7883,8 @@
 					cell_id: cell_id,
 					curr_content: curr_content,
 					cell_title: cell_title,
-					children: children_cells
+					children: children_cells,
+					suggs: cell_suggestions
 				}), '*');
 			}
 			catch (e) {
