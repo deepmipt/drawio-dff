@@ -7548,48 +7548,79 @@
 						var cid = message.cell_id;
 						var data = JSON.parse(message.data);
 
-						var ce = graph.model.getCell(Number(cid));
+
 						graph.model.beginUpdate();
 						try {
+							var ce = graph.model.getCell(cid);
+							if (ce === undefined) {
+								break;
+							}
 							graph.setAttributeForCell(ce, 'data_from_form', message.data);
 							node_title = data["node_title"].split(' ')[0]
-							var par_id = ce.getAttribute("par");
-							var parcel = graph.model.getCell(Number(par_id));
+							graph.setAttributeForCell(ce, 'label', `${node_title} ${data["sfc"]}`);
+							// var par_id = ce.getAttribute("par");
+							// var parcel = graph.model.getCell(Number(par_id));
+							// var base_lay = graph.model.getCell(2);
+							var cell_sty = ce.getStyle();
+							// throw `dashed ${cell_sty} ${cell.getId()}`;
+							if (cell_sty === undefined) {
+								cell_sty = '';
+							}
 
-							if (ce.getStyle().includes("dashed=1")) {
+
+							if (cell_sty.includes("dashed=1")) {
+
+								// throw `${new_cel1}`;
+								// graph.insertEdge(base_lay, null, sfc, parcel, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
+
+
+								// // for (let i = 0; i < ce.getEdgeCount(); i++) {
+								// // 	let edge = ce.getEdgeAt(i);
+
+								// // 	if (edge.target === null) continue; // no target
+								// // 	if (ce.getId() === edge.target.getId()) graph.model.remove(edge);
+								// // }
+
+								// // graph.model.endUpdate();
+								// // graph.refresh();
+								// // graph.model.beginUpdate();
+
+								// // graph.insertEdge(graph.model.getCell(2), null, 'AAA', parcel, ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
+
+								// var sugg_cel = graph.model.getCell(3);
+								// graph.model.setVisible(sugg_cel, false);
+								// var new_cel1 = graph.insertVertex(graph.model.getCell(2), null,
+								// 	`aaa`,
+								// 	ce.x, ce.y,
+								// 	30, 30,
+								// 	'dashed=0;');
+								// throw `${ce.getAttribute('par')}`;
 								ce.setStyle(ce.getStyle().replace("dashed=1", "dashed=0"));
-								graph.model.endUpdate();
-								graph.model.beginUpdate();
-
-								graph.insertEdge(graph.model.getCell(2), null, 'AAA', parcel, ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;"); graph.setAttributeForCell(ce, 'label', `${node_title} ${data["sfc"]}`);
-
-								for (let i = 0; i < ce.getEdgeCount(); i++) {
-									let edge = ce.getEdgeAt(i);
-
-									if (edge.target === null) continue; // no target
-									if (ce.getId() === edge.target.getId()) graph.model.remove(edge);
-								}
-
 								graph.model.add(graph.model.getCell(2), ce); // index is optional here
-
-								var sugg_cel = graph.model.getCell(3);
-								graph.model.setVisible(sugg_cel, false);
-								graph.removeCells(graph.getChildVertices(sugg_cel));
-								visible_coords = []
-								// window.removeEventListener('message', _oleger, true);
-								var layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
-
-								this.executeLayout(function () {
-									// 	var selectionCells = graph.getModel().cells;
-									layout.execute(graph.model.getCell(2));
-								}, true);
+								ce.setParent(graph.model.getCell(2));
+								graph.insertEdge(graph.model.getCell(2), null, ce.getAttribute('incsfc'), graph.model.getCell(ce.getAttribute('par')), ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
+								// graph.removeCells([ce]);
+								graph.removeCells(graph.getChildVertices(graph.model.getCell(3)));
 								graph.refresh();
-								graph.setSelectionCell(ce);
+
+								// visible_coords = []
+								// // window.removeEventListener('message', _oleger, true);
+								// var layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
+
+								// this.executeLayout(function () {
+								// 	// 	var selectionCells = graph.getModel().cells;
+								// 	layout.execute(graph.model.getCell(2));
+								// }, true);
+								// graph.refresh();
+								// graph.setSelectionCell(ce);
 
 
 							}
 							;
 							// window.removeEventListener('message', _oleger, true);
+						}
+						catch (e) {
+							ui.handleError(e);
 						}
 						finally {
 							graph.model.endUpdate();
@@ -7608,22 +7639,35 @@
 					};
 				case 'editEdge':
 					{
-						var cid = message.cell_id;
-						var sfc = message.sfc;
-						// var ce = graph.model.getCell(Number(cid));
-						var ce1 = graph.model.getCell(Number(cid));
-
-						graph.model.beginUpdate();
 						try {
-							for (let i = 0; i < ce1.getEdgeCount(); i++) {
-								let edge = ce1.getEdgeAt(i);
-								if (ce1.getId() === edge.target.getId()) {
-									edge.setValue(`${sfc}`)
+							var cid = message.cell_id;
+							var sfc = message.sfc;
+							var cond = message.cond;
+							if (cond === 'null') {
+								cond = '';
+							}
+							// throw `editEdge ${cid}`;
+
+
+							// var ce = graph.model.getCell(Number(cid));
+							var ce1 = graph.model.getCell(Number(cid));
+
+							graph.model.beginUpdate();
+							try {
+								for (let i = 0; i < ce1.getEdgeCount(); i++) {
+									let edge = ce1.getEdgeAt(i);
+									if (ce1.getId() === edge.target.getId()) {
+										edge.setValue(`${sfc} (p=${cond})`);
+									}
 								}
 							}
-						}
-						finally {
-							graph.model.endUpdate();
+							finally {
+								graph.model.endUpdate();
+							}
+							graph.refresh();
+
+						} catch (e) {
+							ui.handleError(e);
 						}
 						break;
 					};
@@ -7659,16 +7703,19 @@
 											cel_y + cel_h * 0.5, 0.1, 0.1);
 										cel_sfcs.forEach((sug_sfc) => {
 											var sfc = sug_sfc.sug;
+											var conf = Number(sug_sfc.conf).toFixed(2);
 											var cel_hash = cel_x.toString() + "@" + cel_y.toString() + "@" + sfc;
 											if (!visible_coords.includes(cel_hash)) {
 												var new_cel1 = graph.insertVertex(sugg_cel, null, "suggestion",
-													cel_x + cel_w * 1.2, cel_y + 10 + delta,
-													cel_w, cel_h, cel_sty + "dashed=1;");
+													cel_x + cel_w * 3.2, cel_y + 10 + delta,
+													cel_w, cel_h, cel_sty.replace("dashed=0;", "") + "dashed=1;");
 												delta = delta - step;
 												graph.setAttributeForCell(new_cel1, "par", cel_id);
+												new_cel1.setAttribute("par", cel_id);
+												new_cel1.setAttribute("incsfc", sfc);
 
 												visible_coords.push(cel_hash);
-												graph.insertEdge(sugg_cel, null, sfc, new_cel2, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
+												graph.insertEdge(sugg_cel, null, `${sfc} (p=${conf})`, new_cel2, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
 											}
 										})
 
@@ -7735,7 +7782,8 @@
 				case 'VisibilityToggle':
 					{
 						var layer_cell = graph.model.getCell(2);
-						var main_cells = graph.model.getChildCells(layer_cell);
+						// var main_cells = graph.model.getChildCells(layer_cell);
+						var main_cells = graph.getSelectionCells()
 						var cells_to_get_suggestions_from = [];
 						main_cells.forEach((cel) => {
 							var cel_geom = cel.getGeometry();
@@ -7745,11 +7793,13 @@
 							var cel_w = cel_geom.width;
 							var cel_id = cel.getId();
 							var cel_sty = cel.getStyle();
+							var cel_sfc = JSON.parse(cel.getAttribute("data_from_form", "{\"sfc\":\"\"}")).sfc;
 
 							var cel4sugg = {
 								id: cel_id,
 								x: cel_x, y: cel_y, h: cel_h, w: cel_w,
-								sty: cel_sty
+								sty: cel_sty,
+								sfc: cel_sfc
 							}
 							cells_to_get_suggestions_from.push(cel4sugg);
 						});
@@ -7783,7 +7833,7 @@
 					var src_node_id = edge.getAttribute("source");
 					var tgt_node_id = edge.getAttribute("target");
 					if (src_node_id == cell_id) {
-						var condition = edge.getAttribute("cond", "");
+						var condition = edge.getAttribute("value");
 						var child_cell = graph.model.getCell(tgt_node_id);
 						var child_cell_id = child_cell.getId();
 						var child_cell_title = child_cell.getAttribute('label', "Cell #" + child_cell_id);
