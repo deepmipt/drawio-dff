@@ -1189,34 +1189,45 @@ Menubar.prototype.addMenu = function (label, funct, before) {
 Menubar.prototype.addMenuHandler = function (elt, funct) {
 	if (funct != null) {
 		var show = true;
+		var mouseEvent = "";
+		// DFF Buttons
+		const dffButtons = new Set([
+			"Show Suggestions",
+			"Show Markup",
+		]);
 
 		var clickHandler = mxUtils.bind(this, function (evt) {
-			if (show && elt.enabled == null || elt.enabled) {
-				this.editorUi.editor.graph.popupMenuHandler.hideMenu();
-				var menu = new mxPopupMenu(funct);
-				menu.div.className += ' geMenubarMenu';
-				menu.smartSeparators = true;
-				menu.showDisabled = true;
-				menu.autoExpand = true;
+			if (dffButtons.has(elt.innerHTML) && mouseEvent == "mousemove") {
+				// Prevent actions on hover for DFF buttons
+			} else {
+				if (show && elt.enabled == null || elt.enabled) {
+					this.editorUi.editor.graph.popupMenuHandler.hideMenu();
+					var menu = new mxPopupMenu(funct);
+					menu.div.className += ' geMenubarMenu';
+					menu.smartSeparators = true;
+					menu.showDisabled = true;
+					menu.autoExpand = true;
 
-				// Disables autoexpand and destroys menu when hidden
-				menu.hideMenu = mxUtils.bind(this, function () {
-					mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
-					this.editorUi.resetCurrentMenu();
-					menu.destroy();
-				});
+					// Disables autoexpand and destroys menu when hidden
+					menu.hideMenu = mxUtils.bind(this, function () {
+						mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
+						this.editorUi.resetCurrentMenu();
+						menu.destroy();
+					});
 
-				var offset = mxUtils.getOffset(elt);
-				menu.popup(offset.x, offset.y + elt.offsetHeight, null, evt);
-				this.editorUi.setCurrentMenu(menu, elt);
+					var offset = mxUtils.getOffset(elt);
+					menu.popup(offset.x, offset.y + elt.offsetHeight, null, evt);
+					this.editorUi.setCurrentMenu(menu, elt);
+				}
+
+				mxEvent.consume(evt);
 			}
-
-			mxEvent.consume(evt);
 		});
 
 		// Shows menu automatically while in expanded state
 		mxEvent.addListener(elt, 'mousemove', mxUtils.bind(this, function (evt) {
 			if (this.editorUi.currentMenu != null && this.editorUi.currentMenuElt != elt) {
+				mouseEvent = "mousemove";
 				this.editorUi.hideCurrentMenu();
 				clickHandler(evt);
 			}
@@ -1225,11 +1236,13 @@ Menubar.prototype.addMenuHandler = function (elt, funct) {
 		// Hides menu if already showing and prevents focus
 		mxEvent.addListener(elt, (mxClient.IS_POINTER) ? 'pointerdown' : 'mousedown',
 			mxUtils.bind(this, function (evt) {
+				mouseEvent = "mouseclick";
 				show = this.currentElt != elt;
 				evt.preventDefault();
 			}));
 
 		mxEvent.addListener(elt, 'click', mxUtils.bind(this, function (evt) {
+			mouseEvent = "mouseclick";
 			clickHandler(evt);
 			show = true;
 		}));
