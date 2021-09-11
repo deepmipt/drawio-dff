@@ -7542,6 +7542,23 @@
 
 		window.addEventListener('message', event => {
 			const message = event.data; // The JSON data our extension sent
+			if (!event.origin) { // Avoid duplication of events
+				return;
+			}
+			switch (message.connectionError) {
+				case 'showDFFConnError': // Unable to process dff request 
+					{
+						console.log('DFF Error');
+						ui.handleError({ message: 'Unable to connect server to get DFF script' }, 'Error');
+						break;
+					};
+				case 'getSuggsError': // Unable to process suggestions request
+					{
+						console.log('Suggestions Error');
+						ui.handleError({ message: `Unable to connect server to get suggestions: Error ${message.statusCode}` }, 'Error');
+						break;
+					};
+			};
 			switch (message.oleg) {
 				case 'Privet':
 					{
