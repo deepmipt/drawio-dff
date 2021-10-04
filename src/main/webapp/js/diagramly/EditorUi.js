@@ -7545,6 +7545,19 @@
 			if (!event.origin) { // Avoid duplication of events
 				return;
 			}
+			switch (message.graphOperations) {
+				case 'rearrangeGraph':
+					{
+						console.log(graph);
+						layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_WEST);
+
+						this.executeLayout(function () {
+							var selectionCells = graph.getSelectionCells();
+							layout.execute(graph.getDefaultParent(), selectionCells.length == 0 ? null : selectionCells);
+						}, true);
+						break;
+					};
+			};
 			switch (message.connectionError) {
 				case 'showDFFConnError': // Unable to process dff request 
 					{
