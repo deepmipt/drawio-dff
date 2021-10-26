@@ -10334,6 +10334,12 @@
 
 						return;
 					}
+					else if (data.action == 'replace') {
+						this.setFileData(data.xml)
+						this.updateUi()
+
+						return;
+					}
 					else if (data.action == 'remoteInvokeReady') {
 						this.handleRemoteInvokeReady(parent);
 						return;
