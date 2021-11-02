@@ -10335,8 +10335,25 @@
 						return;
 					}
 					else if (data.action == 'replace') {
+						var vs = this.editor.graph.getViewState()
+						var st = this.editor.graph.container.scrollTop;
+						var sl = this.editor.graph.container.scrollLeft;
+						// <BAD CODE>
+						// If there are weird scroll related issues look here!
+						var resetScrollbars = this.resetScrollbars
+						this.resetScrollbars = () => {} // updateUi resets the view so we temporarily disable this function
 						this.setFileData(data.xml)
 						this.updateUi()
+						setTimeout(() => {
+							this.editor.graph.setViewState(vs)
+							this.editor.graph.container.scrollTop = st
+							this.editor.graph.container.scrollLeft = sl
+						}, 20)
+						setTimeout(() => {
+							this.editor.graph.setViewState(vs)
+							this.resetScrollbars = resetScrollbars
+						}, 300)
+            // </BAD CODE>
 
 						return;
 					}
