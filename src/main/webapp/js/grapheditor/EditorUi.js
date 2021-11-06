@@ -4029,27 +4029,27 @@ EditorUi.prototype.executeLayout = function (exec, animate, post) {
 		finally {
 			// Animates the changes in the graph model except
 			// for Camino, where animation is too slow
-			if (this.allowAnimation && animate && (navigator.userAgent == null ||
-				navigator.userAgent.indexOf('Camino') < 0)) {
-				// New API for animating graph layout results asynchronously
-				var morph = new mxMorphing(graph);
-				morph.addListener(mxEvent.DONE, mxUtils.bind(this, function () {
-					graph.getModel().endUpdate();
+			// if (this.allowAnimation && animate && (navigator.userAgent == null ||
+				// navigator.userAgent.indexOf('Camino') < 0)) {
+				// // New API for animating graph layout results asynchronously
+				// var morph = new mxMorphing(graph);
+				// morph.addListener(mxEvent.DONE, mxUtils.bind(this, function () {
+				// 	graph.getModel().endUpdate();
 
-					if (post != null) {
-						post();
-					}
-				}));
+				// 	if (post != null) {
+				// 		post();
+				// 	}
+				// }));
 
-				morph.startAnimation();
-			}
-			else {
+				// morph.startAnimation();
+			// }
+			// else {
 				graph.getModel().endUpdate();
 
 				if (post != null) {
 					post();
 				}
-			}
+			// }
 		}
 	}
 };
