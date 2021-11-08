@@ -7586,9 +7586,9 @@
 								break;
 							}
 							graph.setAttributeForCell(ce, 'data_from_form', message.data);
-							node_title = data["node_title"].split(' ')[0]
-							var sfc = data["sfc"].split(' ')[0];
-							graph.setAttributeForCell(ce, 'label', `${node_title} ${sfc}`);
+							node_title = data["node_title"];
+							var sfc = data["sfc"];
+							graph.setAttributeForCell(ce, 'label', `${node_title}`);
 							// var par_id = ce.getAttribute("par");
 							// var parcel = graph.model.getCell(Number(par_id));
 							// var base_lay = graph.model.getCell(2);
@@ -7852,7 +7852,7 @@
 		graph.cellEditor.startEditing = function _oleger(cell, trigger) {
 			try {
 				var cell_id = cell.getId();
-				var cell_title = cell.getAttribute('label', "Cell #" + cell_id);
+				var cell_title = cell.value ? cell.value : "Cell #" + cell_id;
 				var curr_content = cell.getAttribute('data_from_form', JSON.stringify({}));
 				var cell_suggestions = cell.getAttribute("possible_sfs");
 				layer_cell = graph.model.getCell(2); // 2 is the layer cell
