@@ -7548,7 +7548,9 @@
 			switch (message.graphOperations) {
 				case 'rearrangeGraph':
 					{
-						console.log(graph);
+            var cells = graph.getChildVertices(graph.model.getCell(2))
+            cells.forEach(cell => graph.autoSizeCell(cell, true))
+
 						layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_WEST);
 
 						this.executeLayout(function () {
@@ -7626,11 +7628,19 @@
 								// 	30, 30,
 								// 	'dashed=0;');
 								// throw `${ce.getAttribute('par')}`;
-								ce.setStyle(ce.getStyle().replace("dashed=1", "dashed=0"));
-								graph.model.add(graph.model.getCell(2), ce); // index is optional here
-								ce.setParent(graph.model.getCell(2));
-								// (p=${ce.getAttribute('incsfcconf')})
-								graph.insertEdge(graph.model.getCell(2), null, `${ce.getAttribute('incsfc')}`, graph.model.getCell(ce.getAttribute('par')), ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
+								// let cel_sty = ce.getStyle().replace("dashed=1", "dashed=0").replace("collapsible=0", "collapsible=1");
+                // let parent = graph.model.getCell(2)
+								// graph.model.add(parent, ce); // index is optional here
+								// ce.setParent(parent);
+                // var new_cell = graph.insertVertex(ce, null, node_title, cel.x, cel.y, 200, 64, cel_sty);
+                // graph.setAttributeForCell(new_cell, "isnode", "1")
+                // graph.setAttributeForCell(new_cell, "parent", cid)
+                // graph.setAttributeForCell(new_cell, "label", node_title)
+                // // graph.setAttributeForCell(new_cell, "flow", node_title)
+                // new_cell.setStyle("text;strokeColor=none;fontColor=default;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2;whiteSpace=wrap")
+
+								// // (p=${ce.getAttribute('incsfcconf')})
+								// graph.insertEdge(graph.model.getCell(2), null, `${ce.getAttribute('incsfc')}`, graph.model.getCell(ce.getAttribute('par')), ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
 								// graph.removeCells([ce]);
 								graph.removeCells(graph.getChildVertices(graph.model.getCell(3)));
 								graph.refresh();
@@ -7742,7 +7752,7 @@
 											if (!visible_coords.includes(cel_hash)) {
 												var new_cel1 = graph.insertVertex(sugg_cel, null, "suggestion",
 													cel_x + cel_w * 3.2, cel_y + 10 + delta,
-													cel_w, cel_h, cel_sty.replace("dashed=0;", "") + "dashed=1;");
+													cel_w, cel_h, cel_sty.replace("dashed=0;", "").replace("collapsible=1", "collapsible=0") + "dashed=1;");
 												delta = delta - step;
 												graph.setAttributeForCell(new_cel1, "par", cel_id);
 												new_cel1.setAttribute("par", cel_id);
@@ -7777,19 +7787,19 @@
 									// graph.model.setVisible(sugg_cel, false);
 									// graph.refresh();
 									visible_coords = [];
-									var cells = graph.model.cells;
-									var bad_cells = []
+									// var cells = graph.model.cells;
+									// var bad_cells = []
 									//Add sketch style and font to all cells
-									for (var id in cells) {
-										var cell = cells[id];
-										var cell_sty = cell.getStyle();
-										// throw `dashed ${cell_sty} ${cell.getId()}`;
-										if (cell_sty === undefined) {
-											cell_sty = '';
-										}
-										if (true) {
-											bad_cells.push(cell);
-										}
+									// for (var id in cells) {
+									// 	var cell = cells[id];
+									// 	var cell_sty = cell.getStyle();
+									// 	// throw `dashed ${cell_sty} ${cell.getId()}`;
+									// 	if (cell_sty === undefined) {
+									// 		cell_sty = '';
+									// 	}
+									// 	if (true) {
+									// 		bad_cells.push(cell);
+									// 	}
 										var sugg_cel = graph.model.getCell(3);
 										// graph.model.setVisible(sugg_cel, false);
 										graph.removeCells(graph.getChildVertices(sugg_cel));
@@ -7797,7 +7807,7 @@
 
 										graph.refresh();
 
-									}
+									// }
 									graph.model.endUpdate();
 								}
 								catch (e) {
@@ -7863,16 +7873,16 @@
 				var enc = new mxCodec(mxUtils.createXmlDocument());
 				var node = enc.encode(graph.getModel());
 				// var xml = mxUtils.getXml(node);
-				var edges = node.querySelectorAll("mxCell[source][target]");
+				var edges = node.querySelectorAll("mxCell[source][realtarget]");
 				// var src2tgt = [];
 				edges.forEach(edge => {
 					var src_node_id = edge.getAttribute("source");
-					var tgt_node_id = edge.getAttribute("target");
+					var tgt_node_id = edge.getAttribute("realtarget");
 					if (src_node_id == cell_id) {
 						var condition = edge.getAttribute("value");
 						var child_cell = graph.model.getCell(tgt_node_id);
 						var child_cell_id = child_cell.getId();
-						var child_cell_title = child_cell.getAttribute('label', "Cell #" + child_cell_id);
+						var child_cell_title = child_cell.getAttribute('reallabel', "Cell #" + child_cell_id);
 						children_cells.push({
 							"title": child_cell_title,
 							"condition": condition,
@@ -7908,13 +7918,27 @@
 				// for (var i = 0; i < childCount; i++) {
 
 				// }
+        var parent_title;
+        var parent_flow;
+        var cnd;
+        if (cell_suggestions) {
+          let parUsrObjId = cell.getAttribute('par')
+          let parentnode = node.querySelector(`mxCell[isnode="1"][parent="${parUsrObjId}"]`)
+          parent_title = curr_content.node_title || parentnode.getAttribute('label')
+          parent_flow =  parentnode.getAttribute('flow')
+          cnd = 'dm_cnd.is_sf("' + cell.getAttribute('incsfc') + '")'
+          cell_title = "suggestion"
+        }
 				parent.postMessage(JSON.stringify({
 					event: "oleg",
 					cell_id: cell_id,
 					curr_content: curr_content,
 					cell_title: cell_title,
 					children: children_cells,
-					suggs: cell_suggestions
+					suggs: cell_suggestions,
+          parent: parent_title,
+          flow: parent_flow,
+          cnd: cnd,
 				}), '*');
 			}
 			catch (e) {
@@ -10338,6 +10362,7 @@
 						var vs = this.editor.graph.getViewState()
 						var st = this.editor.graph.container.scrollTop;
 						var sl = this.editor.graph.container.scrollLeft;
+            console.warn('og', 'vs', vs, 'st', st, 'sl', sl)
 						// <BAD CODE>
 						// If there are weird scroll related issues look here!
 						var resetScrollbars = this.resetScrollbars
@@ -10345,9 +10370,10 @@
 						this.setFileData(data.xml)
 						this.updateUi()
 						setTimeout(() => {
-							this.editor.graph.setViewState(vs)
-							this.editor.graph.container.scrollTop = st
-							this.editor.graph.container.scrollLeft = sl
+							// this.editor.graph.setViewState(vs)
+              console.warn('new', 'st', this.editor.graph.container.scrollTop, 'sl', this.editor.graph.container.scrollLeft)
+							// this.editor.graph.container.scrollTop = st
+							// this.editor.graph.container.scrollLeft = sl
 						}, 20)
 						setTimeout(() => {
 							this.editor.graph.setViewState(vs)

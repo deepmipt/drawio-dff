@@ -1503,6 +1503,14 @@ App.prototype.init = function () {
 	if (this.editor.graph.isViewer()) {
 		this.initializeViewerMode();
 	}
+
+  window.setTimeout(() => {
+    this.fullscreenElement.click()
+    // this.toggleCompactMode(false)
+    // this.hsplitPosition = 0;
+    // this.toggleFormatPanel(false);
+    // this.fullscreenMode = true;
+  }, 100)
 };
 
 /**
