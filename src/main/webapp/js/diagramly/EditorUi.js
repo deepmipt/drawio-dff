@@ -7548,8 +7548,8 @@
 			switch (message.graphOperations) {
 				case 'rearrangeGraph':
 					{
-            var cells = graph.getChildVertices(graph.model.getCell(2))
-            cells.forEach(cell => graph.autoSizeCell(cell, true))
+            // var cells = graph.getChildVertices(graph.model.getCell(2))
+            // cells.forEach(cell => graph.autoSizeCell(cell, true))
 
 						layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_WEST);
 
@@ -7579,6 +7579,8 @@
 					{
 						var cid = message.cell_id;
 						var data = JSON.parse(message.data);
+            data.old_titles.push(data.node_title)
+            console.warn('got form data', data)
 
 
 						graph.model.beginUpdate();
@@ -7587,79 +7589,21 @@
 							if (ce === undefined) {
 								break;
 							}
-							graph.setAttributeForCell(ce, 'data_from_form', message.data);
+							graph.setAttributeForCell(ce, 'data_from_form', JSON.stringify(data));
 							node_title = data["node_title"];
 							var sfc = data["sfc"];
 							graph.setAttributeForCell(ce, 'label', `${node_title}`);
-							// var par_id = ce.getAttribute("par");
-							// var parcel = graph.model.getCell(Number(par_id));
-							// var base_lay = graph.model.getCell(2);
 							var cell_sty = ce.getStyle();
-							// throw `dashed ${cell_sty} ${cell.getId()}`;
 							if (cell_sty === undefined) {
 								cell_sty = '';
 							}
 
 
 							if (cell_sty.includes("dashed=1")) {
-
-								// throw `${new_cel1}`;
-								// graph.insertEdge(base_lay, null, sfc, parcel, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
-
-
-								// // for (let i = 0; i < ce.getEdgeCount(); i++) {
-								// // 	let edge = ce.getEdgeAt(i);
-
-								// // 	if (edge.target === null) continue; // no target
-								// // 	if (ce.getId() === edge.target.getId()) graph.model.remove(edge);
-								// // }
-
-								// // graph.model.endUpdate();
-								// // graph.refresh();
-								// // graph.model.beginUpdate();
-
-								// // graph.insertEdge(graph.model.getCell(2), null, 'AAA', parcel, ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
-
-								// var sugg_cel = graph.model.getCell(3);
-								// graph.model.setVisible(sugg_cel, false);
-								// var new_cel1 = graph.insertVertex(graph.model.getCell(2), null,
-								// 	`aaa`,
-								// 	ce.x, ce.y,
-								// 	30, 30,
-								// 	'dashed=0;');
-								// throw `${ce.getAttribute('par')}`;
-								// let cel_sty = ce.getStyle().replace("dashed=1", "dashed=0").replace("collapsible=0", "collapsible=1");
-                // let parent = graph.model.getCell(2)
-								// graph.model.add(parent, ce); // index is optional here
-								// ce.setParent(parent);
-                // var new_cell = graph.insertVertex(ce, null, node_title, cel.x, cel.y, 200, 64, cel_sty);
-                // graph.setAttributeForCell(new_cell, "isnode", "1")
-                // graph.setAttributeForCell(new_cell, "parent", cid)
-                // graph.setAttributeForCell(new_cell, "label", node_title)
-                // // graph.setAttributeForCell(new_cell, "flow", node_title)
-                // new_cell.setStyle("text;strokeColor=none;fontColor=default;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontStyle=2;whiteSpace=wrap")
-
-								// // (p=${ce.getAttribute('incsfcconf')})
-								// graph.insertEdge(graph.model.getCell(2), null, `${ce.getAttribute('incsfc')}`, graph.model.getCell(ce.getAttribute('par')), ce, "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=0;");
-								// graph.removeCells([ce]);
 								graph.removeCells(graph.getChildVertices(graph.model.getCell(3)));
 								graph.refresh();
-
-								// visible_coords = []
-								// // window.removeEventListener('message', _oleger, true);
-								// var layout = new mxHierarchicalLayout(graph, mxConstants.DIRECTION_NORTH);
-
-								// this.executeLayout(function () {
-								// 	// 	var selectionCells = graph.getModel().cells;
-								// 	layout.execute(graph.model.getCell(2));
-								// }, true);
-								// graph.refresh();
-								// graph.setSelectionCell(ce);
-
-
 							}
 							;
-							// window.removeEventListener('message', _oleger, true);
 						}
 						catch (e) {
 							ui.handleError(e);
@@ -7668,8 +7612,6 @@
 							graph.model.endUpdate();
 						}
 
-						// ce.setAttribute("oleg", "kotiki");
-						// graph.cellEditor.startEditing(ce);
 						break;
 					};
 				case 'editCell':
