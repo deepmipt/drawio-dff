@@ -7703,7 +7703,8 @@
 												new_cel1.setAttribute("possible_sfs", JSON.stringify(nodes_suggestions[sfc]));
 
 												visible_coords.push(cel_hash);
-												graph.insertEdge(sugg_cel, null, `${sfc} (p=${conf})`, new_cel2, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
+                        var label = sfc.endsWith('_match') ? sfc :  `${sfc} (p=${conf})`
+												graph.insertEdge(sugg_cel, null, label, new_cel2, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
 											}
 										})
 
@@ -7868,7 +7869,12 @@
           let parentnode = node.querySelector(`mxCell[isnode="1"][parent="${parUsrObjId}"]`)
           parent_title = curr_content.node_title || parentnode.getAttribute('label')
           parent_flow =  parentnode.getAttribute('flow')
-          cnd = 'dm_cnd.is_sf("' + cell.getAttribute('incsfc') + '")'
+          if (cell.getAttribute('incsfc').endsWith('_match')) {
+            cnd = `cnd.${cell.getAttribute('incsfc')}("")`
+            cell_suggestions = '[]'
+          } else {
+            cnd = 'dm_cnd.is_sf("' + cell.getAttribute('incsfc') + '")'
+          }
           cell_title = "suggestion"
         }
 				parent.postMessage(JSON.stringify({

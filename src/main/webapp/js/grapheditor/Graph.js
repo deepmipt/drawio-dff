@@ -3441,266 +3441,32 @@ Graph.prototype.isCloneConnectSource = function(source)
  */
 Graph.prototype.connectVertex = function(source, direction, length, evt, forceClone, ignoreCellAt, createTarget, done)
 {	
-	ignoreCellAt = (ignoreCellAt) ? ignoreCellAt : false;
-	
-	// Ignores relative edge labels
-	if (source.geometry.relative && this.model.isEdge(source.parent))
-	{
-		return [];
-	}
-	
-	// Uses parent for relative child cells
-	while (source.geometry.relative && this.model.isVertex(source.parent))
-	{
-		source = source.parent;
-	}
-	
-	// Handles clone connect sources
-	var cloneSource = this.isCloneConnectSource(source);
-	var composite = (cloneSource) ? source : this.getCompositeParent(source);
-	
-	var pt = (source.geometry.relative && source.parent.geometry != null) ?
-		new mxPoint(source.parent.geometry.width * source.geometry.x,
-			source.parent.geometry.height * source.geometry.y) :
-		new mxPoint(composite.geometry.x, composite.geometry.y);
-		
-	if (direction == mxConstants.DIRECTION_NORTH)
-	{
-		pt.x += composite.geometry.width / 2;
-		pt.y -= length ;
-	}
-	else if (direction == mxConstants.DIRECTION_SOUTH)
-	{
-		pt.x += composite.geometry.width / 2;
-		pt.y += composite.geometry.height + length;
-	}
-	else if (direction == mxConstants.DIRECTION_WEST)
-	{
-		pt.x -= length;
-		pt.y += composite.geometry.height / 2;
-	}
-	else
-	{
-		pt.x += composite.geometry.width + length;
-		pt.y += composite.geometry.height / 2;
-	}
+  if (direction !== mxConstants.DIRECTION_EAST) return;
+  var main_cells = [source]
+  var cells_to_get_suggestions_from = [];
+  main_cells.forEach((cel) => {
+    var cel_geom = cel.getGeometry();
+    var cel_x = cel_geom.x;
+    var cel_y = cel_geom.y;
+    var cel_h = cel_geom.height;
+    var cel_w = cel_geom.width;
+    var cel_id = cel.getId();
+    var cel_sty = cel.getStyle();
+    var cel_sfc = JSON.parse(cel.getAttribute("data_from_form", "{\"sfc\":\"\"}")).sfc;
 
-	var parentState = this.view.getState(this.model.getParent(source));
-	var s = this.view.scale;
-	var t = this.view.translate;
-	var dx = t.x * s;
-	var dy = t.y * s;
-	
-	if (parentState != null && this.model.isVertex(parentState.cell))
-	{
-		dx = parentState.x;
-		dy = parentState.y;
-	}
+    var cel4sugg = {
+      id: cel_id,
+      x: cel_x, y: cel_y, h: cel_h, w: cel_w,
+      sty: cel_sty,
+      sfc: cel_sfc
+    }
+    cells_to_get_suggestions_from.push(cel4sugg);
+  });
 
-	// Workaround for relative child cells
-	if (this.model.isVertex(source.parent) && source.geometry.relative)
-	{
-		pt.x += source.parent.geometry.x;
-		pt.y += source.parent.geometry.y;
-	}
-	
-	// Checks end point for target cell and container
-	var rect = (!ignoreCellAt) ? new mxRectangle(dx + pt.x * s, dy + pt.y * s).grow(40 * s) : null;
-	var tempCells = (rect != null) ? this.getCells(0, 0, 0, 0, null, null, rect, null, true) : null;
-	var sourceState = this.view.getState(source);
-	var container = null;
-	var target = null;
-	
-	if (tempCells != null)
-	{
-		tempCells = tempCells.reverse();
-		
-		for (var i = 0; i < tempCells.length; i++)
-		{
-			if (!this.isCellLocked(tempCells[i]) && !this.model.isEdge(tempCells[i]) && tempCells[i] != source)
-			{
-				// Direct parent overrides all possible containers
-				if (!this.model.isAncestor(source, tempCells[i]) && this.isContainer(tempCells[i]) &&
-					(container == null || tempCells[i] == this.model.getParent(source)))
-				{
-					container = tempCells[i];
-				}
-				// Containers are used as target cells but swimlanes are used as parents
-				else if (target == null && this.isCellConnectable(tempCells[i]) &&
-					!this.model.isAncestor(tempCells[i], source) &&
-					!this.isSwimlane(tempCells[i]))
-				{
-					var targetState = this.view.getState(tempCells[i]);
-					
-					if (sourceState != null && targetState != null && !mxUtils.intersects(sourceState, targetState))
-					{
-						target = tempCells[i];
-					}
-				}
-			}
-		}
-	}
-
-	var duplicate = (!mxEvent.isShiftDown(evt) || mxEvent.isControlDown(evt)) || forceClone;
-	
-	if (duplicate && (urlParams['sketch'] != '1' || forceClone))
-	{
-		if (direction == mxConstants.DIRECTION_NORTH)
-		{
-			pt.y -= source.geometry.height / 2;
-		}
-		else if (direction == mxConstants.DIRECTION_SOUTH)
-		{
-			pt.y += source.geometry.height / 2;
-		}
-		else if (direction == mxConstants.DIRECTION_WEST)
-		{
-			pt.x -= source.geometry.width / 2;
-		}
-		else
-		{
-			pt.x += source.geometry.width / 2;
-		}
-	}
-
-	var result = [];
-	var realTarget = target;
-	target = container;
-	
-	var execute = mxUtils.bind(this, function(targetCell)
-	{
-		if (createTarget == null || targetCell != null || (target == null && cloneSource))
-		{
-			this.model.beginUpdate();
-			try
-			{
-				if (realTarget == null && duplicate)
-				{
-					// Handles relative and composite cells
-					var cellToClone = this.getAbsoluteParent((targetCell != null) ? targetCell : source);
-					cellToClone =  (cloneSource) ? source : this.getCompositeParent(cellToClone);
-					realTarget = (targetCell != null) ? targetCell : this.duplicateCells([cellToClone], false)[0];
-					
-					if (targetCell != null)
-					{
-						this.addCells([realTarget], this.model.getParent(source), null, null, null, true);
-					}
-					
-					var geo = this.getCellGeometry(realTarget);
-	
-					if (geo != null)
-					{
-						if (targetCell != null && urlParams['sketch'] == '1')
-						{
-							if (direction == mxConstants.DIRECTION_NORTH)
-							{
-								pt.y -= geo.height / 2;
-							}
-							else if (direction == mxConstants.DIRECTION_SOUTH)
-							{
-								pt.y += geo.height / 2;
-							}
-							else if (direction == mxConstants.DIRECTION_WEST)
-							{
-								pt.x -= geo.width / 2;
-							}
-							else
-							{
-								pt.x += geo.width / 2;
-							}
-						}
-		
-						geo.x = pt.x - geo.width / 2;
-						geo.y = pt.y - geo.height / 2;
-					}
-					
-					if (container != null)
-					{
-						this.addCells([realTarget], container, null, null, null, true);
-						target = null;
-					}
-					else if (duplicate && !cloneSource)
-					{
-						this.addCells([realTarget], this.getDefaultParent(), null, null, null, true);
-					}
-				}
-				
-				var edge = ((mxEvent.isControlDown(evt) && mxEvent.isShiftDown(evt) && duplicate) ||
-					(target == null && cloneSource)) ? null : this.insertEdge(this.model.getParent(source),
-						null, '', source, realTarget, this.createCurrentEdgeStyle());
-		
-				// Inserts edge before source
-				if (edge != null && this.connectionHandler.insertBeforeSource)
-				{
-					var index = null;
-					var tmp = source;
-					
-					while (tmp.parent != null && tmp.geometry != null &&
-						tmp.geometry.relative && tmp.parent != edge.parent)
-					{
-						tmp = this.model.getParent(tmp);
-					}
-				
-					if (tmp != null && tmp.parent != null && tmp.parent == edge.parent)
-					{
-						var index = tmp.parent.getIndex(tmp);
-						this.model.add(tmp.parent, edge, index);
-					}
-				}
-				
-				// Special case: Click on west icon puts clone before cell
-				if (target == null && realTarget != null && source.parent != null &&
-					cloneSource && direction == mxConstants.DIRECTION_WEST)
-				{
-					var index = source.parent.getIndex(source);
-					this.model.add(source.parent, realTarget, index);
-				}
-				
-				if (edge != null)
-				{
-					result.push(edge);
-				}
-				
-				if (target == null && realTarget != null)
-				{
-					result.push(realTarget);
-				}
-				
-				if (realTarget == null && edge != null)
-				{
-					edge.geometry.setTerminalPoint(pt, false);
-				}
-				
-				if (edge != null)
-				{
-					this.fireEvent(new mxEventObject('cellsInserted', 'cells', [edge]));
-				}
-			}
-			finally
-			{
-				this.model.endUpdate();
-			}
-		}
-			
-		if (done != null)
-		{
-			done(result);
-		}
-		else
-		{
-			return result;
-		}
-	});
-	
-	if (createTarget != null && realTarget == null && duplicate &&
-		(target != null || !cloneSource))
-	{
-		createTarget(dx + pt.x * s, dy + pt.y * s, execute);
-	}
-	else
-	{
-		return execute(realTarget);
-	}
+  (window.opener || window.parent).postMessage(JSON.stringify({
+    event: "get_suggs",
+    cells: cells_to_get_suggestions_from,
+  }), '*');
 };
 
 /**
@@ -5057,7 +4823,7 @@ HoverIcons.prototype.repaint = function()
 			positionArrow(this.arrowLeft, Math.round(bds.x - this.triangleLeft.width - this.tolerance),
 				parseInt(this.arrowRight.style.top));
 			
-			if (this.checkCollisions)
+			if (false)
 			{
 				var right = this.graph.getCellAt(bds.x + bds.width +
 						this.triangleRight.width / 2, this.currentState.getCenterY());
@@ -5100,10 +4866,10 @@ HoverIcons.prototype.repaint = function()
 			}
 			else
 			{
-				this.arrowLeft.style.visibility = 'visible';
+				// this.arrowLeft.style.visibility = 'visible';
 				this.arrowRight.style.visibility = 'visible';
-				this.arrowUp.style.visibility = 'visible';
-				this.arrowDown.style.visibility = 'visible';
+				// this.arrowUp.style.visibility = 'visible';
+				// this.arrowDown.style.visibility = 'visible';
 			}
 			
 			if (this.graph.tooltipHandler.isEnabled())
@@ -5302,12 +5068,12 @@ HoverIcons.prototype.setCurrentState = function(state)
 {
 	if (state.style['portConstraint'] != 'eastwest')
 	{
-		this.graph.container.appendChild(this.arrowUp);
-		this.graph.container.appendChild(this.arrowDown);
+		// this.graph.container.appendChild(this.arrowUp);
+		// this.graph.container.appendChild(this.arrowDown);
 	}
 
 	this.graph.container.appendChild(this.arrowRight);
-	this.graph.container.appendChild(this.arrowLeft);
+	// this.graph.container.appendChild(this.arrowLeft);
 	this.currentState = state;
 };
 
