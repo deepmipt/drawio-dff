@@ -7692,9 +7692,22 @@
 											var conf = Number(sug_sfc.conf).toFixed(2);
 											var cel_hash = cel_x.toString() + "@" + cel_y.toString() + "@" + sfc;
 											if (!visible_coords.includes(cel_hash)) {
-												var new_cel1 = graph.insertVertex(sugg_cel, null, "suggestion",
-													cel_x + cel_w * 3.2, cel_y + 10 + delta,
-													cel_w, cel_h, cel_sty.replace("dashed=0;", "").replace("collapsible=1", "collapsible=0") + "dashed=1;");
+                        var new_cel1 = graph.insertVertex(
+                          sugg_cel,
+                          null,
+                          "suggestion",
+                          cel_x + cel_w * 3.2,
+                          cel_y + 10 + delta,
+                          cel_w,
+                          cel_h,
+                          cel_sty
+                            .replace("dashed=0;", "")
+                            .replace("collapsible=1", "collapsible=0")
+                            .replace("fillColor=#dae8fc", "fillColor=#2a2a2a")
+                            .replace("strokeColor=#6c8ebf", "strokeColor=#DDDDDD")
+                            .replace("fontColor=default", "fontColor=#DDDDDD") +
+                            "dashed=1;strokeWidth=1;"
+                        );
 												delta = delta - step;
 												graph.setAttributeForCell(new_cel1, "par", cel_id);
 												new_cel1.setAttribute("par", cel_id);
@@ -7703,7 +7716,7 @@
 												new_cel1.setAttribute("possible_sfs", JSON.stringify(nodes_suggestions[sfc]));
 
 												visible_coords.push(cel_hash);
-                        var label = sfc.endsWith('_match') ? sfc :  `${sfc} (p=${conf})`
+                        var label = sfc.endsWith('_match') || sfc === "Custom condition" ? sfc :  `${sfc} (p=${conf})`
 												graph.insertEdge(sugg_cel, null, label, new_cel2, new_cel1, "rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;");
 											}
 										})
@@ -7869,7 +7882,10 @@
           let parentnode = node.querySelector(`mxCell[isnode="1"][parent="${parUsrObjId}"]`)
           parent_title = curr_content.node_title || parentnode.getAttribute('label')
           parent_flow =  parentnode.getAttribute('flow')
-          if (cell.getAttribute('incsfc').endsWith('_match')) {
+          if (cell.getAttribute('incsfc') === "Custom condition") {
+            cnd = 'lambda ctx, actor, *args, **kwargs: True'
+            cell_suggestions = '[]'
+          } else if (cell.getAttribute('incsfc').endsWith('_match')) {
             cnd = `cnd.${cell.getAttribute('incsfc')}("")`
             cell_suggestions = '[]'
           } else {
