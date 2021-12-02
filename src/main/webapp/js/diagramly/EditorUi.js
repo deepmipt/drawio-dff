@@ -7610,6 +7610,13 @@
 						}
 						finally {
 							graph.model.endUpdate();
+              var enc = new mxCodec(mxUtils.createXmlDocument());
+              var node = enc.encode(graph.getModel());
+              var xml = mxUtils.getXml(node);
+              parent.postMessage(JSON.stringify({
+                event: "save",
+                xml: xml
+              }), '*');
 						}
 
 						break;
@@ -7796,6 +7803,7 @@
 							var cel_id = cel.getId();
 							var cel_sty = cel.getStyle();
 							var cel_sfc = JSON.parse(cel.getAttribute("data_from_form", "{\"sfc\":\"\"}")).sfc;
+              console.warn('sfc', cel_sfc)
 
 							var cel4sugg = {
 								id: cel_id,
