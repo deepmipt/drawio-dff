@@ -7881,7 +7881,12 @@
           let parUsrObjId = cell.getAttribute('par')
           let parentnode = node.querySelector(`mxCell[isnode="1"][parent="${parUsrObjId}"]`)
           let parUsrObj = node.querySelector(`UserObject[id="${parUsrObjId}"]`)
-          parent_title = JSON.parse(parUsrObj.getAttribute('data_from_form', "{}")).node_title || parentnode.getAttribute('label')
+          if (parUsrObj) {
+            parent_title = JSON.parse(parUsrObj.getAttribute('data_from_form', "{}")).node_title 
+          }
+          if (!parent_title) {
+            parent_title = parentnode.getAttribute('label')
+          }
           parent_flow =  parentnode.getAttribute('flow')
           if (cell.getAttribute('incsfc') === "Custom condition") {
             cnd = 'lambda ctx, actor, *args, **kwargs: True'
