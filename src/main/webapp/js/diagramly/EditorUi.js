@@ -7830,6 +7830,7 @@
 				var curr_content = cell.getAttribute('data_from_form', JSON.stringify({}));
 				var cell_suggestions = cell.getAttribute("possible_sfs");
 				layer_cell = graph.model.getCell(2); // 2 is the layer cell
+        var nodeNames = JSON.parse(layer_cell.nodenames || '[]')
 				layer_cells = layer_cell.children;
 				children_cells = [];
 
@@ -7917,6 +7918,7 @@
           parent: parent_title,
           flow: parent_flow,
           cnd: cnd,
+          nodeNames: nodeNames,
 				}), '*');
 			}
 			catch (e) {
