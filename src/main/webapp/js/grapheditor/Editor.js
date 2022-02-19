@@ -538,7 +538,7 @@ Editor.prototype.setGraphXml = function (node) {
 
 			try {
 				this.graph.model.clear();
-				this.graph.view.scale = 1;
+				// this.graph.view.scale = 1;
 				this.readGraphState(node);
 				this.updateGraphComponents();
 				dec.decode(node, this.graph.getModel());
@@ -547,10 +547,10 @@ Editor.prototype.setGraphXml = function (node) {
 				this.graph.model.endUpdate();
 			}
 
-			this.fireEvent(new mxEventObject('resetGraphView'));
+			// this.fireEvent(new mxEventObject('resetGraphView'));
 		}
 		else if (node.nodeName == 'root') {
-			this.resetGraph();
+			// this.resetGraph();
 
 			// Workaround for invalid XML output in Firefox 20 due to bug in mxUtils.getXml
 			var wrapper = dec.document.createElement('mxGraphModel');
@@ -558,7 +558,7 @@ Editor.prototype.setGraphXml = function (node) {
 
 			dec.decode(wrapper, this.graph.getModel());
 			this.updateGraphComponents();
-			this.fireEvent(new mxEventObject('resetGraphView'));
+			// this.fireEvent(new mxEventObject('resetGraphView'));
 		}
 		else {
 			throw {
@@ -569,9 +569,9 @@ Editor.prototype.setGraphXml = function (node) {
 		}
 	}
 	else {
-		this.resetGraph();
+		// this.resetGraph();
 		this.graph.model.clear();
-		this.fireEvent(new mxEventObject('resetGraphView'));
+		// this.fireEvent(new mxEventObject('resetGraphView'));
 	}
 };
 

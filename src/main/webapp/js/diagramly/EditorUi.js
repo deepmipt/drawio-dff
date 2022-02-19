@@ -10339,28 +10339,17 @@
 						return;
 					}
 					else if (data.action == 'replace') {
-						var vs = this.editor.graph.getViewState()
 						var st = this.editor.graph.container.scrollTop;
 						var sl = this.editor.graph.container.scrollLeft;
-            console.warn('og', 'vs', vs, 'st', st, 'sl', sl)
-						// <BAD CODE>
-						// If there are weird scroll related issues look here!
-						var resetScrollbars = this.resetScrollbars
-						this.resetScrollbars = () => {} // updateUi resets the view so we temporarily disable this function
-						this.setFileData(data.xml)
-						this.updateUi()
+						var resetScrollbars = this.resetScrollbars;
+						this.resetScrollbars = () => {}; // updateUi resets the view so we temporarily disable this function
+						this.setFileData(data.xml);
+						this.updateUi();
 						setTimeout(() => {
-							// this.editor.graph.setViewState(vs)
-              console.warn('new', 'st', this.editor.graph.container.scrollTop, 'sl', this.editor.graph.container.scrollLeft)
-							// this.editor.graph.container.scrollTop = st
-							// this.editor.graph.container.scrollLeft = sl
-						}, 20)
-						setTimeout(() => {
-							this.editor.graph.setViewState(vs)
-							this.resetScrollbars = resetScrollbars
+							this.resetScrollbars = resetScrollbars;
+							this.editor.graph.container.scrollLeft = sl;
+							this.editor.graph.container.scrollTop = st;
 						}, 300)
-            // </BAD CODE>
-
 						return;
 					}
 					else if (data.action == 'remoteInvokeReady') {
