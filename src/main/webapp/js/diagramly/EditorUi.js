@@ -10343,9 +10343,22 @@
 						var sl = this.editor.graph.container.scrollLeft;
 						var resetScrollbars = this.resetScrollbars;
 						this.resetScrollbars = () => {}; // updateUi resets the view so we temporarily disable this function
+						var cells = this.editor.graph.model.getChildVertices(this.editor.graph.model.getCell(2))
+						var fixedCoords;
+						if (cells[0]) {
+							fixedCoords = {
+								x: cells[0].geometry.x,
+								y: cells[0].geometry.y
+							}
+						}
 						this.setFileData(data.xml);
 						this.updateUi();
 						setTimeout(() => {
+							var cells = this.editor.graph.model.getChildVertices(this.editor.graph.model.getCell(2))
+							if (cells[0] && fixedCoords) {
+								sl += cells[0].geometry.x - fixedCoords.x
+								st += cells[0].geometry.y - fixedCoords.y
+							}
 							this.resetScrollbars = resetScrollbars;
 							this.editor.graph.container.scrollLeft = sl;
 							this.editor.graph.container.scrollTop = st;
