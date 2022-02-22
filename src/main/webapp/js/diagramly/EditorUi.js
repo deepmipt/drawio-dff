@@ -10353,16 +10353,20 @@
 						}
 						this.setFileData(data.xml);
 						this.updateUi();
-						setTimeout(() => {
-							var cells = this.editor.graph.model.getChildVertices(this.editor.graph.model.getCell(2))
-							if (cells[0] && fixedCoords) {
-								sl += cells[0].geometry.x - fixedCoords.x
-								st += cells[0].geometry.y - fixedCoords.y
-							}
-							this.resetScrollbars = resetScrollbars;
-							this.editor.graph.container.scrollLeft = sl;
-							this.editor.graph.container.scrollTop = st;
-						}, 300)
+						if (!this.isReplaceInProgress) {
+							this.isReplaceInProgress = true;
+							setTimeout(() => {
+								var cells = this.editor.graph.model.getChildVertices(this.editor.graph.model.getCell(2))
+								if (cells[0] && fixedCoords) {
+									sl += cells[0].geometry.x - fixedCoords.x
+									st += cells[0].geometry.y - fixedCoords.y
+								}
+								this.resetScrollbars = resetScrollbars;
+								this.editor.graph.container.scrollLeft = sl;
+								this.editor.graph.container.scrollTop = st;
+								this.isReplaceInProgress = false;
+							}, 100)
+						}
 						return;
 					}
 					else if (data.action == 'remoteInvokeReady') {
