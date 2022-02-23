@@ -7591,7 +7591,6 @@
 							}
 							graph.setAttributeForCell(ce, 'data_from_form', JSON.stringify(data));
 							node_title = data["node_title"];
-							var sfc = data["sfc"];
 							graph.setAttributeForCell(ce, 'label', `${node_title}`);
 							var cell_sty = ce.getStyle();
 							if (cell_sty === undefined) {
@@ -7802,14 +7801,14 @@
 							var cel_w = cel_geom.width;
 							var cel_id = cel.getId();
 							var cel_sty = cel.getStyle();
-							var cel_sfc = JSON.parse(cel.getAttribute("data_from_form", "{\"sfc\":\"\"}")).sfc;
-              console.warn('sfc', cel_sfc)
+							var form_data = JSON.parse(cel.getAttribute("data_from_form", "{\"sfc\":\"\", \"midas\": \"\"}"))
 
 							var cel4sugg = {
 								id: cel_id,
 								x: cel_x, y: cel_y, h: cel_h, w: cel_w,
 								sty: cel_sty,
-								sfc: cel_sfc
+								sfc: form_data.sfc,
+								midas: form_data.midas
 							}
 							cells_to_get_suggestions_from.push(cel4sugg);
 						});
@@ -7827,7 +7826,7 @@
 			try {
 				var cell_id = cell.getId();
 				var cell_title = cell.value ? cell.value : "Cell #" + cell_id;
-				var curr_content = cell.getAttribute('data_from_form', JSON.stringify({}));
+				var curr_content = cell.getAttribute('data_from_form', JSON.stringify({sfc: "", midas: ""}));
 				var cell_suggestions = cell.getAttribute("possible_sfs");
 				layer_cell = graph.model.getCell(2); // 2 is the layer cell
         var nodeNames = JSON.parse(layer_cell.nodenames || '[]')
@@ -7897,15 +7896,18 @@
             parent_title = parentnode.getAttribute('label')
           }
           parent_flow =  parentnode.getAttribute('flow')
+		const sfc_or_class = cell.getAttribute('incsfc')
           if (cell.getAttribute('incsfc') === "Custom condition") {
             cnd = 'lambda ctx, actor, *args, **kwargs: True'
             cell_suggestions = '[]'
           } else if (cell.getAttribute('incsfc').endsWith('_match')) {
             cnd = `cnd.${cell.getAttribute('incsfc')}("")`
             cell_suggestions = '[]'
-          } else {
+          } else if (sfc_or_class.match(/^[A-Z].*/)) {
             cnd = 'dm_cnd.is_sf("' + cell.getAttribute('incsfc') + '")'
-          }
+          } else {
+		    cnd = `dm_cnd.is_midas("${sfc_or_class}")`;
+		  }
           cell_title = "suggestion"
         }
 				parent.postMessage(JSON.stringify({
@@ -10341,6 +10343,7 @@
 					else if (data.action == 'replace') {
 						var st = this.editor.graph.container.scrollTop;
 						var sl = this.editor.graph.container.scrollLeft;
+						var sh = this.editor.graph.container.scrollHeight;
 						var resetScrollbars = this.resetScrollbars;
 						this.resetScrollbars = () => {}; // updateUi resets the view so we temporarily disable this function
 						var cells = this.editor.graph.model.getChildVertices(this.editor.graph.model.getCell(2))
@@ -10361,11 +10364,12 @@
 									sl += cells[0].geometry.x - fixedCoords.x
 									st += cells[0].geometry.y - fixedCoords.y
 								}
+								st += this.editor.graph.container.scrollHeight - sh;
 								this.resetScrollbars = resetScrollbars;
 								this.editor.graph.container.scrollLeft = sl;
 								this.editor.graph.container.scrollTop = st;
 								this.isReplaceInProgress = false;
-							}, 100)
+							}, 300)
 						}
 						return;
 					}
