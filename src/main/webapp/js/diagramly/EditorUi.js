@@ -7787,6 +7787,20 @@
 						}
 						break;
 					};
+				case 'jumpToNode':
+					{
+						var flowName = message.flowName.replace(/"/g, '\\"');
+						var nodeName = message.nodeName.replace(/"/g, '\\"');
+						var enc = new mxCodec(mxUtils.createXmlDocument());
+						var root = enc.encode(graph.getModel());
+						var node = root.querySelector(`mxCell[isnode="1"][flow="${flowName}"][label="${nodeName}"]`)
+						if (node) {
+							var cell = graph.model.getCell(node.id).parent
+							graph.setSelectionCell(cell)
+							graph.scrollCellToVisible(cell)
+						}
+						break;
+					}
 				case 'VisibilityToggle':
 					{
 						var layer_cell = graph.model.getCell(2);
