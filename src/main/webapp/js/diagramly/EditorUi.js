@@ -7928,6 +7928,22 @@
 			}
 		};
 
+		const selectionModel = graph.getSelectionModel();
+		selectionModel.addListener(mxEvent.CHANGE, (sender, evt) => {
+			// selection has changed
+			const cells = selectionModel.cells;
+			if (cells.length === 1) {
+				const cell = cells[0]
+				const pos = cell.getAttribute("pos")
+				if (pos) {
+					parent.postMessage(JSON.stringify({
+						event: "jumpToNode",
+						pos: JSON.parse(pos)
+					}), '*')
+				}
+			}
+		});
+
 		// Redirects custom link title via UI for page links
 		graph.getLinkTitle = function (href) {
 			return ui.getLinkTitle(href);
